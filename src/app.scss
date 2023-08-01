@@ -1,0 +1,77 @@
+#myContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+  .item {
+    background-color: whitesmoke;
+
+    margin: 30px;
+    padding: 30px;
+    cursor: pointer;
+    img {
+      border-radius: 10px;
+    }
+    h1 {
+      margin-top: 20px;
+      color: red;
+    }
+    p {
+      color: blue;
+    }
+    .myBtn {
+      margin: 20px auto;
+      background-color: orangered;
+      color: white;
+      height: 30px;
+      width: 150px;
+      text-align: center;
+    }
+    .moRong {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      button {
+        width: 400px;
+        &:hover {
+          background-color: blueviolet;
+        }
+      }
+      .chiTiet {
+        max-width: 400px;
+        background-color: white;
+        .chiTietContent {
+          width: 400px;
+          padding: 20px;
+          .inputItem {
+            margin-bottom: 10px;
+            input {
+              width: 100%;
+              height: 32px;
+            }
+            button {
+              background-color: blueviolet;
+              color: white;
+              height: 32px;
+              width: 100%;
+              transition: all 0.3s;
+              &:hover {
+                background-color: orangered;
+              }
+            }
+          }
+          h1 {
+            text-align: center;
+            color: blueviolet;
+            margin: 0 0 20px;
+          }
+        }
+      }
+      .hidden {
+        height: 0;
+        overflow: hidden;
+      }
+    }
+  }
+}
+@media screen and (max-width: 992px) {
+}

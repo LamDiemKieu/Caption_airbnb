@@ -224,7 +224,7 @@ function App() {
       setCount(-1);
       Phong.getPhongThue();
     } else {
-      const ketQuaTimKiem = phongThue.filter((item) => {
+      const ketQuaTimKiem = phongThue?.filter((item) => {
         if (timKiem === "hồ bơi") {
           return item.hoBoi === true;
         } else if (timKiem === "bãi đỗ xe") {
@@ -235,6 +235,8 @@ function App() {
           return item.dieuHoa === true;
         } else if (timKiem === "wifi") {
           return item.dieuHoa === true;
+        } else if (timKiem === "ghế tình yêu") {
+          return item.banLa === true;
         }
       });
       if (ketQuaTimKiem.length > 0) {
@@ -278,7 +280,7 @@ function App() {
     setUser(null);
   };
 
-  const handleTatDangKy = () => {
+  const handleMoDangKy = () => {
     setFormDangKy(!formDangKy);
     document.body.style.height = "auto";
     document.body.style.overflow = "auto"; // Optional: Restore the default scrollbar behavior
@@ -292,7 +294,7 @@ function App() {
 
   // Carousel
   const settings = {
-    dots: false,
+    dots: true,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
@@ -406,14 +408,15 @@ function App() {
         <input
           list="myList"
           name="mySearch"
-          placeholder="Tìm kiếm căn hộ, tiện nghi, vị trí..."
+          placeholder="Tìm kiếm tiện nghi căn hộ..."
           onChange={handleTimKiem}
         />
 
         <datalist id="myList">
-          <option value="Bếp"></option>
           <option value="Bãi đỗ xe"></option>
+          <option value="Bếp"></option>
           <option value="Điều hoà"></option>
+          <option value="Ghế tình yêu"></option>
           <option value="Hồ bơi"></option>
           <option value="Wifi"></option>
         </datalist>
@@ -421,8 +424,13 @@ function App() {
           <p>
             {count !== -1 ? (
               <span>
-                Kết quả tìm được {count} căn hộ có{" "}
-                <span style={{ color: "red" }}>{keyWord}</span>
+                <i
+                  className="fa-regular fa-hand-point-right"
+                  style={{ color: "orangered" }}
+                ></i>{" "}
+                Kết quả tìm được{" "}
+                <span style={{ color: "orangered" }}>{count}</span> căn hộ có{" "}
+                <span style={{ color: "orangered" }}>{keyWord}</span>
               </span>
             ) : (
               <></>
@@ -435,7 +443,13 @@ function App() {
         {phongThue?.map((item, index) => {
           return (
             <div key={index} className="item">
-              <Slider {...settings}>
+              <Slider {...settings} key={index}>
+                <div>
+                  <img src={item.hinhAnh} alt="" />
+                </div>
+                <div>
+                  <img src={item.hinhAnh} alt="" />
+                </div>
                 <div>
                   <img src={item.hinhAnh} alt="" />
                 </div>
@@ -458,21 +472,27 @@ function App() {
               </div>
               <div className="moRong">
                 <div>
-                  <button
-                    type="button"
-                    className="myBtn"
-                    onClick={() => handleClickChiTiet(index)}
-                  >
-                    {clickedItemChiTiet === index ? (
+                  {clickedItemChiTiet === index ? (
+                    <button
+                      type="button"
+                      className="myBtn active"
+                      onClick={() => handleClickChiTiet(index)}
+                    >
                       <span>
                         <i className="fas fa-eye-slash"></i> Chi tiết
                       </span>
-                    ) : (
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="myBtn"
+                      onClick={() => handleClickChiTiet(index)}
+                    >
                       <span>
                         <i className="fas fa-eye"></i> Chi tiết
                       </span>
-                    )}
-                  </button>
+                    </button>
+                  )}
                   <div className="chiTiet">
                     <div
                       className={clickedItemChiTiet === index ? "" : "hidden"}
@@ -541,21 +561,27 @@ function App() {
                   </div>
                 </div>
                 <div>
-                  <button
-                    type="button"
-                    className="myBtn"
-                    onClick={() => handleClickDatPhong(index)}
-                  >
-                    {clickedItemDatPhong === index ? (
+                  {clickedItemDatPhong === index ? (
+                    <button
+                      type="button"
+                      className="myBtn active"
+                      onClick={() => handleClickDatPhong(index)}
+                    >
                       <span>
                         <i className="fas fa-eye-slash"></i> Đặt phòng
                       </span>
-                    ) : (
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="myBtn"
+                      onClick={() => handleClickDatPhong(index)}
+                    >
                       <span>
                         <i className="fas fa-eye"></i> Đặt phòng
                       </span>
-                    )}{" "}
-                  </button>
+                    </button>
+                  )}{" "}
                   <div className="chiTiet">
                     <div
                       className={clickedItemDatPhong === index ? "" : "hidden"}
@@ -586,10 +612,15 @@ function App() {
                                 Xác nhận
                               </button>
                             ) : (
-                              <h1 className="alert" onClick={handleMoDangNhap}>
-                                Vui lòng đăng nhập để đặt phòng
-                                <p>Đăng nhập ngay</p>
-                              </h1>
+                              <div className="alert">
+                                <span>Vui lòng đăng nhập để đặt phòng</span>
+                                <h1 onClick={handleMoDangNhap}>
+                                  Đăng nhập ngay
+                                </h1>
+                                <h1 className="dangKy" onClick={handleMoDangKy}>
+                                  Chưa có tài khoản, đăng ký ngay
+                                </h1>
+                              </div>
                             )}
                           </div>
                         </form>
@@ -603,84 +634,95 @@ function App() {
         })}
       </div>
 
-      <div id="formDangNhap" hidden={formDangNhap}>
-        <form onSubmit={formikDangNhap.handleSubmit}>
-          <h1>Đăng nhập</h1>
-          <div className="inputItem">
-            <input
-              type="text"
-              name="email"
-              value={formikDangNhap.values.email}
-              placeholder="Email"
-              onChange={formikDangNhap.handleChange}
-            />
-          </div>
-          <div className="inputItem">
-            <input
-              type="password"
-              name="password"
-              value={formikDangNhap.values.password}
-              placeholder="Password"
-              onChange={formikDangNhap.handleChange}
-            />
-          </div>
-          <div className="inputItem">
-            <button type="submit">Đăng nhập</button>
-          </div>
-          <div>
-            <div>
-              <button type="button">Quên mật khẩu</button>
+      {formDangNhap ? (
+        <></>
+      ) : (
+        <div id="formDangNhap" hidden={formDangNhap}>
+          <form onSubmit={formikDangNhap.handleSubmit}>
+            <h1>Đăng nhập</h1>
+            <div className="inputItem">
+              <input
+                type="text"
+                name="email"
+                value={formikDangNhap.values.email}
+                placeholder="Email"
+                onChange={formikDangNhap.handleChange}
+              />
+            </div>
+            <div className="inputItem">
+              <input
+                type="password"
+                name="password"
+                value={formikDangNhap.values.password}
+                placeholder="Password"
+                onChange={formikDangNhap.handleChange}
+              />
+            </div>
+            <div className="inputItem">
+              <button type="submit">Đăng nhập</button>
             </div>
             <div>
-              <button type="button" onClick={handleTatDangKy}>
-                Chưa có tài khoản, đăng ký ngay
+              <div>
+                <button type="button">Quên mật khẩu</button>
+              </div>
+              <div>
+                <button type="button" onClick={handleMoDangKy}>
+                  Chưa có tài khoản, đăng ký ngay
+                </button>
+              </div>
+              <i className="fa-solid fa-xmark" onClick={handleTatDangNhap}></i>
+            </div>
+          </form>
+        </div>
+      )}
+      {formDangKy ? (
+        <></>
+      ) : (
+        <div id="formDangKy" hidden={formDangKy}>
+          <form>
+            <h1>Đăng ký</h1>
+            <div className="inputItem">
+              <input type="text" placeholder="Username" />
+            </div>
+            <div className="inputItem">
+              <input type="text" placeholder="Password" />
+            </div>
+            <div className="inputItem">
+              <input type="text" placeholder="Password" />
+            </div>
+            <div className="inputItem">
+              <input type="text" placeholder="Password" />
+            </div>
+            <div className="inputItem">
+              <input type="text" placeholder="Password" />
+            </div>
+            <div className="inputItem">
+              <button type="button">Đăng ký</button>
+            </div>
+            <div>
+              <i
+                className="fa-solid fa-xmark"
+                onClick={handleQuayVeTrangChu}
+              ></i>
+            </div>
+            <div>
+              <button type="button" onClick={handleMoDangKy}>
+                Quay về trang đăng nhập
               </button>
             </div>
-            <i className="fa-solid fa-xmark" onClick={handleTatDangNhap}></i>
-          </div>
-        </form>
-      </div>
-
-      <div id="formDangKy" hidden={formDangKy}>
-        <form>
-          <h1>Đăng ký</h1>
-          <div className="inputItem">
-            <input type="text" placeholder="Username" />
-          </div>
-          <div className="inputItem">
-            <input type="text" placeholder="Password" />
-          </div>
-          <div className="inputItem">
-            <input type="text" placeholder="Password" />
-          </div>
-          <div className="inputItem">
-            <input type="text" placeholder="Password" />
-          </div>
-          <div className="inputItem">
-            <input type="text" placeholder="Password" />
-          </div>
-          <div className="inputItem">
-            <button type="button">Đăng ký</button>
-          </div>
-          <div>
-            <i className="fa-solid fa-xmark" onClick={handleQuayVeTrangChu}></i>
-          </div>
-          <div>
-            <button type="button" onClick={handleTatDangKy}>
-              Quay về trang đăng nhập
-            </button>
-          </div>
-          <div>
-            <button type="button" onClick={handleQuayVeTrangChu}>
-              Quay về trang chủ
-            </button>
-          </div>
-        </form>
-      </div>
+            <div>
+              <button type="button" onClick={handleQuayVeTrangChu}>
+                Quay về trang chủ
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <Footer />
     </div>
   );
 }
+
 
 export default App;

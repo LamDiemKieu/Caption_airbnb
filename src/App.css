@@ -1,8 +1,10 @@
 .slick-prev::before {
   color: orangered !important;
   left: 0;
+  display: none;
 }
 .slick-next::before {
   color: orangered !important;
   right: 0;
+  display: none;
 }

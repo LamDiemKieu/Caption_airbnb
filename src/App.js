@@ -1,16 +1,12 @@
-import logo from "./logo.svg";
 import "./App.css";
 import "./app.scss";
-import Header from "./Header";
-import Carousel from "./Carousel";
 import Footer from "./Footer";
-import Tabs from "./Tabs";
-import Menu from "./Menu";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import DanhSachPhongThue from "./Components/DanhSachPhongThue";
 import Slider from "react-slick";
 import { useFormik } from "formik";
+import * as yup from "yup";
+import { message } from "antd";
 
 function App() {
   //giá trị khởi tạo ban đầu
@@ -21,9 +17,16 @@ function App() {
   const [binhLuan, setBinhLuan] = useState([]);
   const [count, setCount] = useState(-1);
   const [keyWord, setKeyWord] = useState("");
+  const [thongTinDangNhap, setThongTinDangNhap] = useState(null);
   //phần ẩn hiện form
   const [formDangNhap, setFormDangNhap] = useState(true);
   const [formDangKy, setFormDangKy] = useState(true);
+
+  //dùng message của antd
+  const [messageApi, contextHolder] = message.useMessage();
+
+  //giới tính
+  const [gender, setGender] = useState("");
 
   const tokenCybersoft =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5Mb3AiOiJCb290Y2FtcCBTw6FuZyAwNyIsIkhldEhhblN0cmluZyI6IjE5LzEyLzIwMjMiLCJIZXRIYW5UaW1lIjoiMTcwMjk0NDAwMDAwMCIsIm5iZiI6MTY3OTg1MDAwMCwiZXhwIjoxNzAzMDkxNjAwfQ.28D2Nfp6Hy4C5u8pvZDIxH2pzlYoKIqgfsJLI_Dque4";
@@ -41,9 +44,16 @@ function App() {
         data: data,
       })
         .then((res) => {
-          console.log(res);
+          //đăng ký thành công
+          messageApi.success("Đăng ký thành công :)");
+          setGender("");
+          formikDangKy.handleReset();
+          handleMoDangKy();
+          setThongTinDangNhap(data);
         })
         .catch((err) => {
+          //đăng ký thất bại
+          messageApi.error("Người dùng đã tồn tại :(");
           console.log(err);
         });
     },
@@ -141,8 +151,12 @@ function App() {
       })
         .then((res) => {
           setDatPhong(res.data.content);
+          messageApi.success("Đặt phòng thành công :)");
+          formikDatPhong.resetForm();
         })
         .catch((err) => {
+          messageApi.error("Đặt phòng thất bại :(");
+
           console.log(err);
         });
     },
@@ -183,10 +197,6 @@ function App() {
     },
   };
 
-  // Auth.signin(thongTinDangNhap);
-
-  // Auth.signOut("user");
-
   //dùng componentDidMount để update dữ liệu cho lần chạy dầu tiên
   useEffect(() => {
     BinhLuan.getBinhLuan();
@@ -210,10 +220,6 @@ function App() {
   };
   const handleClickChiTiet = (index) => {
     setclickedItemChiTiet((prevState) => (prevState === index ? -1 : index));
-  };
-  // Function to handle form submission
-  const handleFormSubmit = (item) => {
-    console.log(item);
   };
   //tìm kiếm
   const handleTimKiem = (event) => {
@@ -247,7 +253,6 @@ function App() {
       }
     }
   };
-
   //ẩn hiện form đăng nhập
   const handleMoDangNhap = () => {
     setFormDangNhap(!formDangNhap);
@@ -261,29 +266,20 @@ function App() {
     document.body.style.overflow = "auto"; // Optional: Restore the default scrollbar behavior
   };
 
-  // xử lý đăng nhập
-  const formikDangNhap = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-    },
-    onSubmit: (values) => {
-      // console.log(values);
-      Auth.signin(values);
-      formikDangNhap.resetForm();
-    },
-  });
-
-  //xử lý đăng xuất
-  const handleDangXuat = () => {
-    localStore.xoaLocalStore("user");
-    setUser(null);
-  };
-
   const handleMoDangKy = () => {
     setFormDangKy(!formDangKy);
     document.body.style.height = "auto";
     document.body.style.overflow = "auto"; // Optional: Restore the default scrollbar behavior
+  };
+
+  //check nam nữ
+  const handleCheckNam = () => {
+    setGender(true);
+    formikDangKy.setFieldValue("gender", true); // Update the formik gender field value
+  };
+  const handleCheckNu = () => {
+    setGender(false);
+    formikDangKy.setFieldValue("gender", false); // Update the formik gender field value
   };
   const handleQuayVeTrangChu = () => {
     setFormDangKy(true);
@@ -301,10 +297,109 @@ function App() {
     slidesToScroll: 1,
   };
 
-  //check xem có đăng nhận chưa?
+  //Chức năng
+  //xử lý đăng ký
+  const formikDangKy = useFormik({
+    initialValues: {
+      id: 0,
+      name: "",
+      email: "",
+      password: "",
+      phone: "",
+      birthday: "",
+      gender: "",
+      role: "USER",
+    },
+    validationSchema: yup.object({
+      name: yup.string().required("Vui lòng nhập tên người dùng"),
+      password: yup
+        .string()
+        .required("Vui lòng nhập mật khẩu")
+        .matches(
+          /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/,
+          "Mật khẩu ít nhất 6 ký tự, phải có ký tự hoa và đặc biệt"
+        ),
+
+      email: yup
+        .string()
+        .email("Email không hợp lệ")
+        .required("Vui lòng nhập email"),
+
+      phone: yup
+        .string()
+        .required("Vui lòng nhập số điện thoại")
+        .matches(/^\d+$/, "Số điện thoại chỉ được chứa số")
+        .max(11, "Số điện thoại tối đa 11 ký tự"),
+      birthday: yup.string().required("Vui lòng chọn năm sinh"),
+      gender: yup.string().required("Vui lòng chọn giới tính"),
+    }),
+    onSubmit: (values) => {
+      if (values.gender === "") {
+        formDangKy.errors.gender = "Vui lòng chọn giới tính";
+        return;
+      }
+      Auth.signup(values);
+    },
+  });
+  // xử lý đăng nhập
+  const formikDangNhap = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    onSubmit: (values) => {
+      // console.log(values);
+      Auth.signin(values);
+      formikDangNhap.resetForm();
+    },
+  });
+  //xử lý đăng xuất
+  const handleDangXuat = () => {
+    localStore.xoaLocalStore("user");
+    setUser(null);
+    setThongTinDangNhap(null);
+  };
+
+  //xử lý đặt phòng
+  const formikDatPhong = useFormik({
+    initialValues: {
+      id: 0,
+      ngayDen: "",
+      ngayDi: "",
+      soLuongKhach: 1,
+    },
+
+    validationSchema: yup.object({
+      ngayDen: yup.string().required("Vui lòng chọn ngày đến"),
+      ngayDi: yup.string().required("Vui lòng chọn ngày đi"),
+      soLuongKhach: yup
+        .string()
+        .required("Vui lòng nhập số lượng khách")
+        .matches(/^\d+$/, "Số lượng khách chỉ được nhập số")
+        .test(
+          "is-greater-than-one",
+          "Số lượng khách phải lớn hơn hoặc bằng 1",
+          (value) => {
+            return parseInt(value) >= 1;
+          }
+        ),
+    }),
+
+    onSubmit: (values) => {
+      const maPhong = document.querySelector('input[name="maPhong"]').value;
+      const maNguoiDung = document.querySelector(
+        'input[name="maNguoiDung"]'
+      ).value;
+
+      const datPhong = { ...values, maPhong, maNguoiDung };
+      DatPhong.postDatPhong(datPhong);
+      // console.log(datPhong);
+    },
+  });
 
   return (
     <div className="App">
+      {contextHolder}
       <div id="myHeader">
         <nav className="bg-slate-400 border-gray-200 dark:bg-gray-900 w-full z-50">
           <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -402,7 +497,6 @@ function App() {
           </div>
         </nav>{" "}
       </div>
-      {/* <Menu /> */}
 
       <div id="mySearch">
         <input
@@ -588,29 +682,80 @@ function App() {
                     >
                       <div className="chiTietContent">
                         {/* <h1>Form đặt phòng</h1> */}
-                        <form>
+                        <form onSubmit={formikDatPhong.handleSubmit}>
+                          <div className="inputItem" hidden>
+                            <label htmlFor="maPhong">Mã phòng</label>
+                            <input
+                              type="text"
+                              name="maPhong"
+                              // defaultValue={item.id}
+                              value={item.id}
+                              readOnly
+                            />
+                          </div>
+                          <div className="inputItem" hidden>
+                            <label htmlFor="maNguoiDung">Mã người dùng</label>
+                            <input
+                              type="text"
+                              name="maNguoiDung"
+                              // defaultValue={user?.user.id}
+                              value={user?.user.id}
+                              readOnly
+                            />
+                          </div>
                           <div className="inputItem">
                             <label htmlFor="ngayDen">Ngày đến</label>
-                            <input type="date" />
+                            <input
+                              type="date"
+                              name="ngayDen"
+                              value={formikDatPhong.values.ngayDen}
+                              onChange={formikDatPhong.handleChange}
+                              onBlur={formikDatPhong.handleBlur}
+                            />
                           </div>
+                          {formikDatPhong.errors.ngayDen &&
+                          formikDatPhong.touched.ngayDen ? (
+                            <p>{formikDatPhong.errors.ngayDen}</p>
+                          ) : (
+                            <p></p>
+                          )}{" "}
                           <div className="inputItem">
                             <label htmlFor="ngayDi">Ngày đi</label>
 
-                            <input type="date" />
+                            <input
+                              type="date"
+                              name="ngayDi"
+                              value={formikDatPhong.values.ngayDi}
+                              onChange={formikDatPhong.handleChange}
+                              onBlur={formikDatPhong.handleBlur}
+                            />
                           </div>
+                          {formikDatPhong.errors.ngayDi &&
+                          formikDatPhong.touched.ngayDi ? (
+                            <p>{formikDatPhong.errors.ngayDi}</p>
+                          ) : (
+                            <p></p>
+                          )}{" "}
                           <div className="inputItem">
                             <label htmlFor="soLuong">Số lượng khách</label>
 
-                            <input type="text" />
+                            <input
+                              type="text"
+                              name="soLuongKhach"
+                              value={formikDatPhong.values.soLuongKhach}
+                              onChange={formikDatPhong.handleChange}
+                              onBlur={formikDatPhong.handleBlur}
+                            />
                           </div>
+                          {formikDatPhong.errors.soLuongKhach &&
+                          formikDatPhong.touched.soLuongKhach ? (
+                            <p>{formikDatPhong.errors.soLuongKhach}</p>
+                          ) : (
+                            <p></p>
+                          )}{" "}
                           <div className="inputItem">
                             {user ? (
-                              <button
-                                type="button"
-                                onClick={() => handleFormSubmit(item)}
-                              >
-                                Xác nhận
-                              </button>
+                              <button type="submit">Xác nhận</button>
                             ) : (
                               <div className="alert">
                                 <span>Vui lòng đăng nhập để đặt phòng</span>
@@ -644,7 +789,11 @@ function App() {
               <input
                 type="text"
                 name="email"
-                value={formikDangNhap.values.email}
+                value={
+                  thongTinDangNhap
+                    ? thongTinDangNhap.email
+                    : formikDangNhap.values.email
+                }
                 placeholder="Email"
                 onChange={formikDangNhap.handleChange}
               />
@@ -653,7 +802,11 @@ function App() {
               <input
                 type="password"
                 name="password"
-                value={formikDangNhap.values.password}
+                value={
+                  thongTinDangNhap
+                    ? thongTinDangNhap.password
+                    : formikDangNhap.values.password
+                }
                 placeholder="Password"
                 onChange={formikDangNhap.handleChange}
               />
@@ -663,10 +816,16 @@ function App() {
             </div>
             <div>
               <div>
-                <button type="button">Quên mật khẩu</button>
+                <button className="secondary" type="button">
+                  Quên mật khẩu
+                </button>
               </div>
               <div>
-                <button type="button" onClick={handleMoDangKy}>
+                <button
+                  className="secondary"
+                  type="button"
+                  onClick={handleMoDangKy}
+                >
                   Chưa có tài khoản, đăng ký ngay
                 </button>
               </div>
@@ -679,25 +838,112 @@ function App() {
         <></>
       ) : (
         <div id="formDangKy" hidden={formDangKy}>
-          <form>
+          <form onSubmit={formikDangKy.handleSubmit}>
             <h1>Đăng ký</h1>
             <div className="inputItem">
-              <input type="text" placeholder="Username" />
+              <input
+                type="text"
+                name="name"
+                value={formikDangKy.values.name}
+                placeholder="Tên người dùng"
+                onChange={formikDangKy.handleChange}
+                onBlur={formikDangKy.handleBlur}
+              />
             </div>
+            {formikDangKy.errors.name && formikDangKy.touched.name ? (
+              <p>{formikDangKy.errors.name}</p>
+            ) : (
+              <p></p>
+            )}{" "}
             <div className="inputItem">
-              <input type="text" placeholder="Password" />
+              <input
+                type="text"
+                name="email"
+                value={formikDangKy.values.email}
+                placeholder="Email"
+                onChange={formikDangKy.handleChange}
+                onBlur={formikDangKy.handleBlur}
+              />
             </div>
+            {formikDangKy.errors.email && formikDangKy.touched.email ? (
+              <p>{formikDangKy.errors.email}</p>
+            ) : (
+              <p></p>
+            )}{" "}
             <div className="inputItem">
-              <input type="text" placeholder="Password" />
+              <input
+                type="password"
+                name="password"
+                value={formikDangKy.values.password}
+                placeholder="Password"
+                onChange={formikDangKy.handleChange}
+                onBlur={formikDangKy.handleBlur}
+              />
             </div>
+            {formikDangKy.errors.password && formikDangKy.touched.password ? (
+              <p>{formikDangKy.errors.password}</p>
+            ) : (
+              <p></p>
+            )}{" "}
             <div className="inputItem">
-              <input type="text" placeholder="Password" />
+              <input
+                type="text"
+                name="phone"
+                value={formikDangKy.values.phone}
+                placeholder="Số điện thoại"
+                onChange={formikDangKy.handleChange}
+                onBlur={formikDangKy.handleBlur}
+              />
             </div>
+            {formikDangKy.errors.phone && formikDangKy.touched.phone ? (
+              <p>{formikDangKy.errors.phone}</p>
+            ) : (
+              <p></p>
+            )}{" "}
             <div className="inputItem">
-              <input type="text" placeholder="Password" />
+              <input
+                type="date"
+                name="birthday"
+                value={formikDangKy.values.birthday}
+                onChange={formikDangKy.handleChange}
+                onBlur={formikDangKy.handleBlur}
+              />
             </div>
+            {formikDangKy.errors.birthday && formikDangKy.touched.birthday ? (
+              <p>{formikDangKy.errors.birthday}</p>
+            ) : (
+              <p></p>
+            )}{" "}
+            <div className="gioiTinh">
+              <label>Giới tính: </label>
+              <div>
+                <label htmlFor="gender_male">Nam </label>
+                <input
+                  type="checkbox"
+                  name="gender"
+                  value={formikDangKy.values.gender}
+                  checked={gender === true}
+                  onChange={handleCheckNam}
+                />
+              </div>
+              <div>
+                <label htmlFor="gender_female">Nữ </label>
+                <input
+                  type="checkbox"
+                  name="gender"
+                  value={formikDangKy.values.gender}
+                  checked={gender === false}
+                  onChange={handleCheckNu}
+                />
+              </div>
+            </div>
+            {formikDangKy.errors.gender && formikDangKy.touched.gender ? (
+              <p>{formikDangKy.errors.gender}</p>
+            ) : (
+              <p></p>
+            )}{" "}
             <div className="inputItem">
-              <button type="button">Đăng ký</button>
+              <button type="submit">Đăng ký</button>
             </div>
             <div>
               <i
@@ -705,13 +951,21 @@ function App() {
                 onClick={handleQuayVeTrangChu}
               ></i>
             </div>
-            <div>
-              <button type="button" onClick={handleMoDangKy}>
+            <div style={{ marginTop: "10px" }}>
+              <button
+                className="secondary"
+                type="button"
+                onClick={handleMoDangKy}
+              >
                 Quay về trang đăng nhập
               </button>
             </div>
             <div>
-              <button type="button" onClick={handleQuayVeTrangChu}>
+              <button
+                className="secondary"
+                type="button"
+                onClick={handleQuayVeTrangChu}
+              >
                 Quay về trang chủ
               </button>
             </div>
@@ -723,6 +977,5 @@ function App() {
     </div>
   );
 }
-
 
 export default App;

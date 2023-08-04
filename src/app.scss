@@ -165,7 +165,7 @@
         }
       }
       .binhLuan {
-        height: 500px;
+        max-height: 500px;
         overflow: scroll;
         .binhLuanContent {
           padding: 10px 20px 10px;
@@ -363,4 +363,7 @@
 }
 
 @media screen and (max-width: 992px) {
+  img {
+    height: 260px;
+  }
 }

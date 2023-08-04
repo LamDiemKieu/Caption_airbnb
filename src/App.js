@@ -14,7 +14,7 @@ function App() {
   const [phongThue, setPhongThue] = useState([]);
   const [datPhong, setDatPhong] = useState([]);
   const [viTri, setViTri] = useState([]);
-  const [binhLuan, setBinhLuan] = useState(true);
+  const [binhLuan, setBinhLuan] = useState([]);
   const [count, setCount] = useState(-1);
   const [keyWord, setKeyWord] = useState("");
   const [thongTinDangNhap, setThongTinDangNhap] = useState(null);
@@ -111,7 +111,8 @@ function App() {
         },
       })
         .then((res) => {
-          console.log(res.data.content);
+          setBinhLuan(res.data.content);
+          // console.log(res.data.content);
         })
         .catch((err) => {
           console.log(err);
@@ -214,11 +215,12 @@ function App() {
 
   //dùng componentDidMount để update dữ liệu cho lần chạy dầu tiên
   useEffect(() => {
-    BinhLuan.getBinhLuan();
     Phong.getPhongThue();
-    ViTri.getViTri();
-    DatPhong.getDatPhong();
     localStore.goiLocalStore("user");
+
+    // BinhLuan.getBinhLuan();
+    // ViTri.getViTri();
+    // DatPhong.getDatPhong();
   }, []);
   // console.log("Phòng thuê", phongThue);
   // console.log("Vị trí", viTri);
@@ -238,8 +240,9 @@ function App() {
     setClickedItemChiTiet((prevState) => (prevState === index ? -1 : index));
   };
   //click bình luận
-  const handleClickBinhLuan = (index) => {
+  const handleClickBinhLuan = (index, maPhong) => {
     setClickedItemBinhLuan((prevState) => (prevState === index ? -1 : index));
+    BinhLuan.getBinhLuanTheoMaPhong(maPhong);
   };
   //tìm kiếm
   const handleTimKiem = (event) => {
@@ -681,7 +684,7 @@ function App() {
                       <button
                         type="button"
                         className="myBtn active"
-                        onClick={() => handleClickBinhLuan(index)}
+                        onClick={() => handleClickBinhLuan(index, item.id)}
                       >
                         <span>
                           <i className="fas fa-eye-slash"></i> Bình luận
@@ -691,7 +694,7 @@ function App() {
                       <button
                         type="button"
                         className="myBtn"
-                        onClick={() => handleClickBinhLuan(index)}
+                        onClick={() => handleClickBinhLuan(index, item.id)}
                       >
                         <span>
                           <i className="fas fa-eye"></i> Bình luận
@@ -706,6 +709,7 @@ function App() {
                         className={
                           clickedItemBinhLuan === index ? "" : "hidden"
                         }
+                        key={item.id}
                       >
                         <div
                           className={
@@ -713,17 +717,13 @@ function App() {
                           }
                         >
                           {binhLuan
-                            ?.filter((binhLuan) => binhLuan.maPhong === item.id)
                             .sort(
                               (a, b) =>
                                 new Date(b.ngayBinhLuan) -
                                 new Date(a.ngayBinhLuan)
                             )
-                            .map((binhLuan) => (
-                              <div
-                                className="binhLuanContent"
-                                key={binhLuan.id}
-                              >
+                            .map((binhLuan, index) => (
+                              <div className="binhLuanContent" key={index}>
                                 <div className="nguoiDung">
                                   <span>Người dùng: {binhLuan.id}</span>
 

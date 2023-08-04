@@ -164,6 +164,53 @@
           }
         }
       }
+      .binhLuan {
+        height: 500px;
+        overflow: scroll;
+        .binhLuanContent {
+          padding: 10px 20px 10px;
+          .nguoiDung {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            span {
+              font-size: 12px;
+              color: silver;
+            }
+          }
+          .danhGia {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            .star-rating {
+              display: inline-block;
+              font-size: 16px;
+            }
+
+            .star-rating::before {
+              content: "\2605"; /* Ngôi sao Unicode */
+              color: orangered; /* Màu sắc của ngôi sao */
+            }
+
+            /* Các class tương ứng với số sao */
+            .star-rating.star-1::before {
+              content: "\2605";
+            }
+            .star-rating.star-2::before {
+              content: "\2605\2605";
+            }
+            .star-rating.star-3::before {
+              content: "\2605\2605\2605";
+            }
+            .star-rating.star-4::before {
+              content: "\2605\2605\2605\2605";
+            }
+            .star-rating.star-5::before {
+              content: "\2605\2605\2605\2605\2605";
+            }
+          }
+        }
+      }
       .hidden {
         height: 0;
         overflow: hidden;

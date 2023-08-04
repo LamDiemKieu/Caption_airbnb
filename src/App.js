@@ -7,14 +7,14 @@ import Slider from "react-slick";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { message } from "antd";
-
+import moment from "moment";
 function App() {
   //giá trị khởi tạo ban đầu
   const [user, setUser] = useState(null);
   const [phongThue, setPhongThue] = useState([]);
   const [datPhong, setDatPhong] = useState([]);
   const [viTri, setViTri] = useState([]);
-  const [binhLuan, setBinhLuan] = useState([]);
+  const [binhLuan, setBinhLuan] = useState(true);
   const [count, setCount] = useState(-1);
   const [keyWord, setKeyWord] = useState("");
   const [thongTinDangNhap, setThongTinDangNhap] = useState(null);
@@ -97,6 +97,21 @@ function App() {
       })
         .then((res) => {
           setBinhLuan(res.data.content);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    getBinhLuanTheoMaPhong: (maPhong) => {
+      axios({
+        method: "get",
+        url: `https://airbnbnew.cybersoft.edu.vn/api/binh-luan/lay-binh-luan-theo-phong/${maPhong}`,
+        headers: {
+          tokenCybersoft,
+        },
+      })
+        .then((res) => {
+          console.log(res.data.content);
         })
         .catch((err) => {
           console.log(err);
@@ -205,21 +220,26 @@ function App() {
     DatPhong.getDatPhong();
     localStore.goiLocalStore("user");
   }, []);
-  // console.log("Bình luận", binhLuan);
   // console.log("Phòng thuê", phongThue);
   // console.log("Vị trí", viTri);
   // console.log("Đặt phòng", datPhong);
   // console.log(user);
 
-  const [clickedItemDatPhong, setclickedItemDatPhong] = useState(-1);
-  const [clickedItemChiTiet, setclickedItemChiTiet] = useState(-1);
+  const [clickedItemDatPhong, setClickedItemDatPhong] = useState(-1);
+  const [clickedItemChiTiet, setClickedItemChiTiet] = useState(-1);
+  const [clickedItemBinhLuan, setClickedItemBinhLuan] = useState(-1);
 
-  // Function to handle the click on "Đặt phòng" button
+  //click đặt phòng
   const handleClickDatPhong = (index) => {
-    setclickedItemDatPhong((prevState) => (prevState === index ? -1 : index));
+    setClickedItemDatPhong((prevState) => (prevState === index ? -1 : index));
   };
+  //click chi tiết
   const handleClickChiTiet = (index) => {
-    setclickedItemChiTiet((prevState) => (prevState === index ? -1 : index));
+    setClickedItemChiTiet((prevState) => (prevState === index ? -1 : index));
+  };
+  //click bình luận
+  const handleClickBinhLuan = (index) => {
+    setClickedItemBinhLuan((prevState) => (prevState === index ? -1 : index));
   };
   //tìm kiếm
   const handleTimKiem = (event) => {
@@ -564,96 +584,169 @@ function App() {
               <div>
                 <span>{item.moTa}</span>
               </div>
+
               <div className="moRong">
                 <div>
-                  {clickedItemChiTiet === index ? (
-                    <button
-                      type="button"
-                      className="myBtn active"
-                      onClick={() => handleClickChiTiet(index)}
-                    >
-                      <span>
-                        <i className="fas fa-eye-slash"></i> Chi tiết
-                      </span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="myBtn"
-                      onClick={() => handleClickChiTiet(index)}
-                    >
-                      <span>
-                        <i className="fas fa-eye"></i> Chi tiết
-                      </span>
-                    </button>
-                  )}
-                  <div className="chiTiet">
+                  <div>
+                    {clickedItemChiTiet === index ? (
+                      <button
+                        type="button"
+                        className="myBtn active"
+                        onClick={() => handleClickChiTiet(index)}
+                      >
+                        <span>
+                          <i className="fas fa-eye-slash"></i> Chi tiết
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="myBtn"
+                        onClick={() => handleClickChiTiet(index)}
+                      >
+                        <span>
+                          <i className="fas fa-eye"></i> Chi tiết
+                        </span>
+                      </button>
+                    )}
+                    <div className="chiTiet">
+                      <div
+                        className={clickedItemChiTiet === index ? "" : "hidden"}
+                      >
+                        <div className="chiTietContent">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Tiện nghi căn hộ </th>
+                                <th>Mô tả </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Ghế tình yêu</td>
+                                <td>{item.banLa ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Điều hoà</td>
+                                <td>{item.dieuHoa ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Bếp</td>
+                                <td>{item.bep ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Wifi</td>
+                                <td>{item.wifi ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Tivi</td>
+                                <td>{item.tivi ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Bàn ủi</td>
+                                <td>{item.banUi ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Máy giặt</td>
+                                <td>{item.mayGiat ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Đỗ xe</td>
+                                <td>{item.doXe ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Hồ bơi</td>
+                                <td>{item.hoBoi ? "Có" : "Không"}</td>
+                              </tr>
+                              <tr>
+                                <td>Phòng ngủ</td>
+                                <td>{item.phongNgu}</td>
+                              </tr>
+                              <tr>
+                                <td>Giường</td>
+                                <td>{item.giuong}</td>
+                              </tr>
+                              <tr>
+                                <td>Phòng tắm</td>
+                                <td>{item.phongTam}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    {clickedItemBinhLuan === index ? (
+                      <button
+                        type="button"
+                        className="myBtn active"
+                        onClick={() => handleClickBinhLuan(index)}
+                      >
+                        <span>
+                          <i className="fas fa-eye-slash"></i> Bình luận
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="myBtn"
+                        onClick={() => handleClickBinhLuan(index)}
+                      >
+                        <span>
+                          <i className="fas fa-eye"></i> Bình luận
+                        </span>
+                      </button>
+                    )}
                     <div
-                      className={clickedItemChiTiet === index ? "" : "hidden"}
+                      className="chiTiet binhLuan"
+                      hidden={clickedItemBinhLuan === index ? false : true}
                     >
-                      <div className="chiTietContent">
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>Tiện nghi căn hộ </th>
-                              <th>Mô tả </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>Ghế tình yêu</td>
-                              <td>{item.banLa ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Điều hoà</td>
-                              <td>{item.dieuHoa ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Bếp</td>
-                              <td>{item.bep ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Wifi</td>
-                              <td>{item.wifi ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Tivi</td>
-                              <td>{item.tivi ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Bàn ủi</td>
-                              <td>{item.banUi ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Máy giặt</td>
-                              <td>{item.mayGiat ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Đỗ xe</td>
-                              <td>{item.doXe ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Hồ bơi</td>
-                              <td>{item.hoBoi ? "Có" : "Không"}</td>
-                            </tr>
-                            <tr>
-                              <td>Phòng ngủ</td>
-                              <td>{item.phongNgu}</td>
-                            </tr>
-                            <tr>
-                              <td>Giường</td>
-                              <td>{item.giuong}</td>
-                            </tr>
-                            <tr>
-                              <td>Phòng tắm</td>
-                              <td>{item.phongTam}</td>
-                            </tr>
-                          </tbody>
-                        </table>
+                      <div
+                        className={
+                          clickedItemBinhLuan === index ? "" : "hidden"
+                        }
+                      >
+                        <div
+                          className={
+                            clickedItemBinhLuan === index ? "" : "hidden"
+                          }
+                        >
+                          {binhLuan
+                            ?.filter((binhLuan) => binhLuan.maPhong === item.id)
+                            .sort(
+                              (a, b) =>
+                                new Date(b.ngayBinhLuan) -
+                                new Date(a.ngayBinhLuan)
+                            )
+                            .map((binhLuan) => (
+                              <div
+                                className="binhLuanContent"
+                                key={binhLuan.id}
+                              >
+                                <div className="nguoiDung">
+                                  <span>Người dùng: {binhLuan.id}</span>
+
+                                  <span>
+                                    {moment(binhLuan.ngayBinhLuan).format(
+                                      "DD/MM/YYYY"
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="danhGia">
+                                  <span>{binhLuan.noiDung}</span>
+                                  <span
+                                    className={`star-rating star-${binhLuan.saoBinhLuan}`}
+                                  ></span>
+                                </div>
+                              </div>
+                            ))}{" "}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
+
                 <div>
                   {clickedItemDatPhong === index ? (
                     <button

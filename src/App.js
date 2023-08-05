@@ -13,20 +13,23 @@ function App() {
   const [user, setUser] = useState(null);
   const [phongThue, setPhongThue] = useState([]);
   const [datPhong, setDatPhong] = useState([]);
+  const [datPhongTheoMaNguoiDung, setDatPhongTheoMaNguoiDung] = useState([]);
   const [viTri, setViTri] = useState([]);
+  const [tatCaBinhLuan, setTatCaBinhLuan] = useState([]);
   const [binhLuan, setBinhLuan] = useState([]);
   const [count, setCount] = useState(-1);
   const [keyWord, setKeyWord] = useState("");
   const [thongTinDangNhap, setThongTinDangNhap] = useState(null);
+  //giới tính
+  const [gender, setGender] = useState("");
+
   //phần ẩn hiện form
   const [formDangNhap, setFormDangNhap] = useState(true);
   const [formDangKy, setFormDangKy] = useState(true);
+  const [thongTinDatPhong, setThongTinDatPhong] = useState(true);
 
   //dùng message của antd
   const [messageApi, contextHolder] = message.useMessage();
-
-  //giới tính
-  const [gender, setGender] = useState("");
 
   const tokenCybersoft =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5Mb3AiOiJCb290Y2FtcCBTw6FuZyAwNyIsIkhldEhhblN0cmluZyI6IjE5LzEyLzIwMjMiLCJIZXRIYW5UaW1lIjoiMTcwMjk0NDAwMDAwMCIsIm5iZiI6MTY3OTg1MDAwMCwiZXhwIjoxNzAzMDkxNjAwfQ.28D2Nfp6Hy4C5u8pvZDIxH2pzlYoKIqgfsJLI_Dque4";
@@ -96,7 +99,7 @@ function App() {
         },
       })
         .then((res) => {
-          setBinhLuan(res.data.content);
+          setTatCaBinhLuan(res.data.content);
         })
         .catch((err) => {
           console.log(err);
@@ -141,8 +144,8 @@ function App() {
 
   //gọi dữ liệu từ API, đặt phòng
   const DatPhong = {
-    getDatPhong: () => {
-      axios({
+    getDatPhong: async () => {
+      await axios({
         method: "get",
         url: "https://airbnbnew.cybersoft.edu.vn/api/dat-phong",
         headers: {
@@ -156,8 +159,8 @@ function App() {
           console.log(err);
         });
     },
-    postDatPhong: (data) => {
-      axios({
+    postDatPhong: async (data) => {
+      await axios({
         method: "post",
         url: "https://airbnbnew.cybersoft.edu.vn/api/dat-phong",
         headers: {
@@ -173,6 +176,38 @@ function App() {
         .catch((err) => {
           messageApi.error("Đặt phòng thất bại :(");
 
+          console.log(err);
+        });
+    },
+    getDatPhongTheoMaNguoiDung: async (maNguoiDung) => {
+      await axios({
+        method: "get",
+        url: `https://airbnbnew.cybersoft.edu.vn/api/dat-phong/lay-theo-nguoi-dung/${maNguoiDung}`,
+        headers: {
+          tokenCybersoft,
+        },
+        data: maNguoiDung,
+      })
+        .then((res) => {
+          setDatPhongTheoMaNguoiDung(res.data.content);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    xoaDatPhong: async (id) => {
+      await axios({
+        method: "delete",
+        url: `https://airbnbnew.cybersoft.edu.vn/api/dat-phong/${id}`,
+        headers: {
+          tokenCybersoft,
+        },
+      })
+        .then((res) => {
+          // console.log(res);
+          DatPhong.getDatPhongTheoMaNguoiDung(user.user.id);
+        })
+        .catch((err) => {
           console.log(err);
         });
     },
@@ -217,8 +252,7 @@ function App() {
   useEffect(() => {
     Phong.getPhongThue();
     localStore.goiLocalStore("user");
-
-    // BinhLuan.getBinhLuan();
+    BinhLuan.getBinhLuan();
     // ViTri.getViTri();
     // DatPhong.getDatPhong();
   }, []);
@@ -230,10 +264,15 @@ function App() {
   const [clickedItemDatPhong, setClickedItemDatPhong] = useState(-1);
   const [clickedItemChiTiet, setClickedItemChiTiet] = useState(-1);
   const [clickedItemBinhLuan, setClickedItemBinhLuan] = useState(-1);
+  const [clickedItemThongTin, setClickedItemThongTin] = useState(-1);
 
   //click đặt phòng
   const handleClickDatPhong = (index) => {
     setClickedItemDatPhong((prevState) => (prevState === index ? -1 : index));
+  };
+  //click thông tin
+  const handleClickThongTin = (index) => {
+    setClickedItemThongTin((prevState) => (prevState === index ? -1 : index));
   };
   //click chi tiết
   const handleClickChiTiet = (index) => {
@@ -307,6 +346,7 @@ function App() {
   const handleQuayVeTrangChu = () => {
     setFormDangKy(true);
     setFormDangNhap(true);
+    setThongTinDatPhong(true);
     document.body.style.height = "auto";
     document.body.style.overflow = "auto"; // Optional: Restore the default scrollbar behavior
   };
@@ -410,6 +450,7 @@ function App() {
 
     onSubmit: (values) => {
       const maPhong = document.querySelector('input[name="maPhong"]').value;
+      console.log(maPhong);
       const maNguoiDung = document.querySelector(
         'input[name="maNguoiDung"]'
       ).value;
@@ -420,22 +461,49 @@ function App() {
     },
   });
 
+  //xem thông tin đặt phòng
+  const handleThongTinDatPhong = () => {
+    const maNguoiDung = user.user.id;
+    DatPhong.getDatPhongTheoMaNguoiDung(maNguoiDung);
+    setThongTinDatPhong(!thongTinDatPhong);
+    document.body.style.height = "100vh";
+    document.body.style.overflow = "hidden";
+  };
+  //tìm tên căn hộ từ mã
+  const updatedDatPhongTheoMaNguoiDung = datPhongTheoMaNguoiDung?.map(
+    (item, index) => {
+      const foundRoom = phongThue.find((phong) => phong.id === item.maPhong);
+
+      if (foundRoom) {
+        const newPhong = { ...item, tenPhong: foundRoom.tenPhong };
+        return newPhong;
+      }
+
+      return item; // Return original item if matching room is not found
+    }
+  );
+  // console.log(updatedDatPhongTheoMaNguoiDung);
+
+  //xoá đặt phòng
+  const handleXoaDatPhong = (id) => {
+    DatPhong.xoaDatPhong(id);
+  };
   return (
     <div className="App">
       {contextHolder}
       <div id="myHeader">
-        <nav className="bg-slate-400 border-gray-200 dark:bg-gray-900 w-full z-50">
-          <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-            <a href="https://flowbite.com/" className="flex items-center">
+        <nav className=" w-full z-50">
+          <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-6">
+            <span className="flex items-center text-white">
               <img
                 src="https://flowbite.com/docs/images/logo.svg"
                 className="h-8 mr-3"
                 alt="Flowbite Logo"
               />
               <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-                Flowbite
+                AirBnb
               </span>
-            </a>
+            </span>
             <button
               data-collapse-toggle="navbar-default"
               type="button"
@@ -466,38 +534,18 @@ function App() {
             >
               <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
                 <li>
-                  <a
-                    href="#"
-                    className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
-                    aria-current="page"
-                  >
-                    Home
-                  </a>
+                  {user === null ? (
+                    <></>
+                  ) : (
+                    <span
+                      className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                      onClick={handleThongTinDatPhong}
+                    >
+                      Thông tin đặt phòng
+                    </span>
+                  )}
                 </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                  >
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                  >
-                    Services
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                  >
-                    Pricing
-                  </a>
-                </li>
+
                 <li>
                   {user === null ? (
                     <span
@@ -558,6 +606,14 @@ function App() {
 
       <div id="myContent">
         {phongThue?.map((item, index) => {
+          // Sử dụng filter để đếm số lượng bình luận
+          // console.log(tatCaBinhLuan);
+          // console.log(item.id)
+          const countBinhLuan = tatCaBinhLuan.filter(
+            (binhLuan) => binhLuan.maPhong === item.id
+          ).length;
+          // console.log(countBinhLuan);
+
           return (
             <div key={index} className="item">
               <Slider {...settings} key={index}>
@@ -679,189 +735,241 @@ function App() {
                       </div>
                     </div>
                   </div>
+                  {/* bình luận */}
+                  {countBinhLuan > 0 ? (
+                    <div>
+                      {clickedItemBinhLuan === index ? (
+                        <button
+                          type="button"
+                          className="myBtn active"
+                          onClick={() => handleClickBinhLuan(index, item.id)}
+                        >
+                          <span>
+                            <i className="fas fa-eye-slash"></i> Bình luận (
+                            {countBinhLuan})
+                          </span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="myBtn"
+                          onClick={() => handleClickBinhLuan(index, item.id)}
+                        >
+                          <span>
+                            <i className="fas fa-eye"></i> Bình luận (
+                            {countBinhLuan})
+                          </span>
+                        </button>
+                      )}
+                      <div
+                        className="chiTiet binhLuan"
+                        hidden={clickedItemBinhLuan === index ? false : true}
+                      >
+                        <div
+                          className={
+                            clickedItemBinhLuan === index ? "" : "hidden"
+                          }
+                          key={item.id}
+                        >
+                          <div
+                            className={
+                              clickedItemBinhLuan === index ? "" : "hidden"
+                            }
+                          >
+                            {binhLuan
+                              .sort(
+                                (a, b) =>
+                                  new Date(b.ngayBinhLuan) -
+                                  new Date(a.ngayBinhLuan)
+                              )
+                              .map((binhLuan, index) => (
+                                <div className="binhLuanContent" key={index}>
+                                  <div className="nguoiDung">
+                                    <span>{binhLuan.tenNguoiBinhLuan}</span>
+
+                                    <span>
+                                      {moment(binhLuan.ngayBinhLuan).format(
+                                        "DD/MM/YYYY"
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div className="danhGia">
+                                    <span>{binhLuan.noiDung}</span>
+                                    <span
+                                      className={`star-rating star-${binhLuan.saoBinhLuan}`}
+                                    ></span>
+                                  </div>
+                                </div>
+                              ))}{" "}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+                </div>
+
+                <div>
                   <div>
-                    {clickedItemBinhLuan === index ? (
+                    {clickedItemDatPhong === index ? (
                       <button
                         type="button"
                         className="myBtn active"
-                        onClick={() => handleClickBinhLuan(index, item.id)}
+                        onClick={() => handleClickDatPhong(index)}
                       >
                         <span>
-                          <i className="fas fa-eye-slash"></i> Bình luận
+                          <i className="fas fa-eye-slash"></i> Đặt phòng
                         </span>
                       </button>
                     ) : (
                       <button
                         type="button"
                         className="myBtn"
-                        onClick={() => handleClickBinhLuan(index, item.id)}
+                        onClick={() => handleClickDatPhong(index)}
                       >
                         <span>
-                          <i className="fas fa-eye"></i> Bình luận
+                          <i className="fas fa-eye"></i> Đặt phòng
                         </span>
                       </button>
-                    )}
-                    <div
-                      className="chiTiet binhLuan"
-                      hidden={clickedItemBinhLuan === index ? false : true}
-                    >
+                    )}{" "}
+                    <div className="chiTiet">
                       <div
                         className={
-                          clickedItemBinhLuan === index ? "" : "hidden"
+                          clickedItemDatPhong === index ? "" : "hidden"
                         }
-                        key={item.id}
                       >
-                        <div
-                          className={
-                            clickedItemBinhLuan === index ? "" : "hidden"
-                          }
-                        >
-                          {binhLuan
-                            .sort(
-                              (a, b) =>
-                                new Date(b.ngayBinhLuan) -
-                                new Date(a.ngayBinhLuan)
-                            )
-                            .map((binhLuan, index) => (
-                              <div className="binhLuanContent" key={index}>
-                                <div className="nguoiDung">
-                                  <span>Người dùng: {binhLuan.id}</span>
+                        <div className="chiTietContent">
+                          {/* <h1>Form đặt phòng</h1> */}
+                          <form onSubmit={formikDatPhong.handleSubmit}>
+                            <div className="inputItem">
+                              {/* <label htmlFor="maPhong">Mã phòng</label> */}
+                              {clickedItemDatPhong === index ? (
+                                <input
+                                  type="text"
+                                  name="maPhong"
+                                  value={item.id}
+                                  readOnly
+                                  hidden
+                                />
+                              ) : (
+                                <></>
+                              )}
+                            </div>
+                            <div className="inputItem" hidden>
+                              <label htmlFor="maNguoiDung">Mã người dùng</label>
+                              <input
+                                type="text"
+                                name="maNguoiDung"
+                                // defaultValue={user?.user.id}
+                                value={user?.user.id}
+                                readOnly
+                              />
+                            </div>
+                            <div className="inputItem">
+                              <label htmlFor="ngayDen">Ngày đến</label>
+                              <input
+                                type="date"
+                                name="ngayDen"
+                                value={formikDatPhong.values.ngayDen}
+                                onChange={formikDatPhong.handleChange}
+                                onBlur={formikDatPhong.handleBlur}
+                              />
+                            </div>
+                            {formikDatPhong.errors.ngayDen &&
+                            formikDatPhong.touched.ngayDen ? (
+                              <p>{formikDatPhong.errors.ngayDen}</p>
+                            ) : (
+                              <p></p>
+                            )}{" "}
+                            <div className="inputItem">
+                              <label htmlFor="ngayDi">Ngày đi</label>
 
-                                  <span>
-                                    {moment(binhLuan.ngayBinhLuan).format(
-                                      "DD/MM/YYYY"
-                                    )}
-                                  </span>
+                              <input
+                                type="date"
+                                name="ngayDi"
+                                value={formikDatPhong.values.ngayDi}
+                                onChange={formikDatPhong.handleChange}
+                                onBlur={formikDatPhong.handleBlur}
+                              />
+                            </div>
+                            {formikDatPhong.errors.ngayDi &&
+                            formikDatPhong.touched.ngayDi ? (
+                              <p>{formikDatPhong.errors.ngayDi}</p>
+                            ) : (
+                              <p></p>
+                            )}{" "}
+                            <div className="inputItem">
+                              <label htmlFor="soLuong">Số lượng khách</label>
+
+                              <input
+                                type="text"
+                                name="soLuongKhach"
+                                value={formikDatPhong.values.soLuongKhach}
+                                onChange={formikDatPhong.handleChange}
+                                onBlur={formikDatPhong.handleBlur}
+                              />
+                            </div>
+                            {formikDatPhong.errors.soLuongKhach &&
+                            formikDatPhong.touched.soLuongKhach ? (
+                              <p>{formikDatPhong.errors.soLuongKhach}</p>
+                            ) : (
+                              <p></p>
+                            )}{" "}
+                            <div className="inputItem">
+                              {user ? (
+                                <button type="submit">Xác nhận</button>
+                              ) : (
+                                <div className="alert">
+                                  <span>Vui lòng đăng nhập để đặt phòng</span>
+                                  <h1 onClick={handleMoDangNhap}>
+                                    Đăng nhập ngay
+                                  </h1>
+                                  <h1
+                                    className="dangKy"
+                                    onClick={handleMoDangKy}
+                                  >
+                                    Chưa có tài khoản, đăng ký ngay
+                                  </h1>
                                 </div>
-                                <div className="danhGia">
-                                  <span>{binhLuan.noiDung}</span>
-                                  <span
-                                    className={`star-rating star-${binhLuan.saoBinhLuan}`}
-                                  ></span>
-                                </div>
-                              </div>
-                            ))}{" "}
+                              )}
+                            </div>
+                          </form>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div>
-                  {clickedItemDatPhong === index ? (
-                    <button
-                      type="button"
-                      className="myBtn active"
-                      onClick={() => handleClickDatPhong(index)}
-                    >
-                      <span>
-                        <i className="fas fa-eye-slash"></i> Đặt phòng
-                      </span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="myBtn"
-                      onClick={() => handleClickDatPhong(index)}
-                    >
-                      <span>
-                        <i className="fas fa-eye"></i> Đặt phòng
-                      </span>
-                    </button>
-                  )}{" "}
-                  <div className="chiTiet">
-                    <div
-                      className={clickedItemDatPhong === index ? "" : "hidden"}
-                    >
-                      <div className="chiTietContent">
-                        {/* <h1>Form đặt phòng</h1> */}
-                        <form onSubmit={formikDatPhong.handleSubmit}>
-                          <div className="inputItem" hidden>
-                            <label htmlFor="maPhong">Mã phòng</label>
-                            <input
-                              type="text"
-                              name="maPhong"
-                              // defaultValue={item.id}
-                              value={item.id}
-                              readOnly
-                            />
-                          </div>
-                          <div className="inputItem" hidden>
-                            <label htmlFor="maNguoiDung">Mã người dùng</label>
-                            <input
-                              type="text"
-                              name="maNguoiDung"
-                              // defaultValue={user?.user.id}
-                              value={user?.user.id}
-                              readOnly
-                            />
-                          </div>
-                          <div className="inputItem">
-                            <label htmlFor="ngayDen">Ngày đến</label>
-                            <input
-                              type="date"
-                              name="ngayDen"
-                              value={formikDatPhong.values.ngayDen}
-                              onChange={formikDatPhong.handleChange}
-                              onBlur={formikDatPhong.handleBlur}
-                            />
-                          </div>
-                          {formikDatPhong.errors.ngayDen &&
-                          formikDatPhong.touched.ngayDen ? (
-                            <p>{formikDatPhong.errors.ngayDen}</p>
-                          ) : (
-                            <p></p>
-                          )}{" "}
-                          <div className="inputItem">
-                            <label htmlFor="ngayDi">Ngày đi</label>
-
-                            <input
-                              type="date"
-                              name="ngayDi"
-                              value={formikDatPhong.values.ngayDi}
-                              onChange={formikDatPhong.handleChange}
-                              onBlur={formikDatPhong.handleBlur}
-                            />
-                          </div>
-                          {formikDatPhong.errors.ngayDi &&
-                          formikDatPhong.touched.ngayDi ? (
-                            <p>{formikDatPhong.errors.ngayDi}</p>
-                          ) : (
-                            <p></p>
-                          )}{" "}
-                          <div className="inputItem">
-                            <label htmlFor="soLuong">Số lượng khách</label>
-
-                            <input
-                              type="text"
-                              name="soLuongKhach"
-                              value={formikDatPhong.values.soLuongKhach}
-                              onChange={formikDatPhong.handleChange}
-                              onBlur={formikDatPhong.handleBlur}
-                            />
-                          </div>
-                          {formikDatPhong.errors.soLuongKhach &&
-                          formikDatPhong.touched.soLuongKhach ? (
-                            <p>{formikDatPhong.errors.soLuongKhach}</p>
-                          ) : (
-                            <p></p>
-                          )}{" "}
-                          <div className="inputItem">
-                            {user ? (
-                              <button type="submit">Xác nhận</button>
-                            ) : (
-                              <div className="alert">
-                                <span>Vui lòng đăng nhập để đặt phòng</span>
-                                <h1 onClick={handleMoDangNhap}>
-                                  Đăng nhập ngay
-                                </h1>
-                                <h1 className="dangKy" onClick={handleMoDangKy}>
-                                  Chưa có tài khoản, đăng ký ngay
-                                </h1>
-                              </div>
-                            )}
-                          </div>
-                        </form>
+                  <div>
+                    {clickedItemThongTin === index ? (
+                      <button
+                        type="button"
+                        className="myBtn active"
+                        onClick={() => handleClickThongTin(index)}
+                      >
+                        <span>
+                          <i className="fas fa-eye-slash"></i> Thông tin chủ nhà
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="myBtn"
+                        onClick={() => handleClickThongTin(index)}
+                      >
+                        <span>
+                          <i className="fas fa-eye"></i> Thông tin chủ nhà
+                        </span>
+                      </button>
+                    )}{" "}
+                    <div className="chiTiet">
+                      <div
+                        className={
+                          clickedItemThongTin === index ? "" : "hidden"
+                        }
+                      >
+                        <div className="chiTietContent">
+                          <h1>hotline: 0909999999</h1>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -871,7 +979,7 @@ function App() {
           );
         })}
       </div>
-
+      {/* from đăng nhập */}
       {formDangNhap ? (
         <></>
       ) : (
@@ -927,6 +1035,7 @@ function App() {
           </form>
         </div>
       )}
+      {/* form đăng ký */}
       {formDangKy ? (
         <></>
       ) : (
@@ -1063,6 +1172,42 @@ function App() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+      {/* Thông tin đặt phòng */}
+      {thongTinDatPhong ? (
+        <></>
+      ) : (
+        <div id="thongTinDatPhong">
+          <h1 onClick={handleQuayVeTrangChu}>Quay về trang chủ</h1>
+          <div className="datPhongContent">
+            {updatedDatPhongTheoMaNguoiDung?.map((item, index) => {
+              return (
+                <div key={index} className="datPhongItem">
+                  <h1>{item.tenPhong.toUpperCase()}</h1>
+                  <p>Ngày đến: {moment(item.ngayDen).format("DD/MM/YYYY")}</p>
+                  <p>Ngày đi: {moment(item.ngayDi).format("DD/MM/YYYY")}</p>
+                  <h1>Số lượng khách: {item.soLuongKhach}</h1>
+                  <div>
+                    <span>
+                      <i className="fa-regular fa-comment"></i>
+                    </span>{" "}
+                    <span>
+                      <i className="fa-regular fa-pen-to-square"></i>
+                    </span>{" "}
+                    <span>
+                      <i
+                        className="fa-regular fa-trash-can"
+                        onClick={() => {
+                          handleXoaDatPhong(item.id);
+                        }}
+                      ></i>
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

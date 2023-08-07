@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const giaoTiepAPI = () => {
-  return (
-    <div>giaoTiepAPI</div>
-  )
-}
+  return <div>giaoTiepAPI</div>;
+};
 
-export default giaoTiepAPI
+export default giaoTiepAPI;

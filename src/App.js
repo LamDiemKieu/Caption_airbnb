@@ -22,17 +22,26 @@ function App() {
   const [thongTinDangNhap, setThongTinDangNhap] = useState(null);
   //giới tính
   const [gender, setGender] = useState("");
-
+  //ngày bình luận
+  const [ngayBinhLuan, setNgayBinhLuan] = useState(
+    moment().format("DD/MM/YYYY")
+  );
   //phần ẩn hiện form
   const [formDangNhap, setFormDangNhap] = useState(true);
   const [formDangKy, setFormDangKy] = useState(true);
   const [thongTinDatPhong, setThongTinDatPhong] = useState(true);
+  const [myMenu, setMyMenu] = useState(true);
+  const [showDanhGia, setShowDanhGia] = useState(true);
 
   //dùng message của antd
   const [messageApi, contextHolder] = message.useMessage();
 
+  //tokenCybersoft
   const tokenCybersoft =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5Mb3AiOiJCb290Y2FtcCBTw6FuZyAwNyIsIkhldEhhblN0cmluZyI6IjE5LzEyLzIwMjMiLCJIZXRIYW5UaW1lIjoiMTcwMjk0NDAwMDAwMCIsIm5iZiI6MTY3OTg1MDAwMCwiZXhwIjoxNzAzMDkxNjAwfQ.28D2Nfp6Hy4C5u8pvZDIxH2pzlYoKIqgfsJLI_Dque4";
+  //token user
+  const token =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMxNzEiLCJlbWFpbCI6Im5odXQxMjM0NTZAZ21haWwuY29tIiwicm9sZSI6IlVTRVIiLCJuYmYiOjE2OTEyNDAyNDQsImV4cCI6MTY5MTg0NTA0NH0.f-N3_70yOvMSGq32nZGa5T71izymIf64jVNPDNqRW7k";
 
   //gọi dữ liệu từ API, đang nhập, đăng ký
   const Auth = {
@@ -90,8 +99,8 @@ function App() {
 
   //gọi dữ liệu từ API, bình luận
   const BinhLuan = {
-    getBinhLuan: () => {
-      axios({
+    getBinhLuan: async () => {
+      await axios({
         method: "get",
         url: "https://airbnbnew.cybersoft.edu.vn/api/binh-luan",
         headers: {
@@ -105,8 +114,8 @@ function App() {
           console.log(err);
         });
     },
-    getBinhLuanTheoMaPhong: (maPhong) => {
-      axios({
+    getBinhLuanTheoMaPhong: async (maPhong) => {
+      await axios({
         method: "get",
         url: `https://airbnbnew.cybersoft.edu.vn/api/binh-luan/lay-binh-luan-theo-phong/${maPhong}`,
         headers: {
@@ -121,12 +130,29 @@ function App() {
           console.log(err);
         });
     },
+    postBinhLuan: async (dataBinhLuan) => {
+      await axios({
+        method: "post",
+        url: "https://airbnbnew.cybersoft.edu.vn/api/binh-luan",
+        data: dataBinhLuan,
+        headers: {
+          tokenCybersoft,
+          token,
+        },
+      })
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
   };
 
   //gọi dữ liệu từ API, phòng
   const Phong = {
-    getPhongThue: () => {
-      axios({
+    getPhongThue: async () => {
+      await axios({
         method: "get",
         url: "https://airbnbnew.cybersoft.edu.vn/api/phong-thue",
         headers: {
@@ -265,11 +291,15 @@ function App() {
   const [clickedItemChiTiet, setClickedItemChiTiet] = useState(-1);
   const [clickedItemBinhLuan, setClickedItemBinhLuan] = useState(-1);
   const [clickedItemThongTin, setClickedItemThongTin] = useState(-1);
+  // const [clickedItemDanhGia, setClickedItemDanhGia] = useState(-1);
 
   //click đặt phòng
   const handleClickDatPhong = (index) => {
     setClickedItemDatPhong((prevState) => (prevState === index ? -1 : index));
   };
+  // const handleClickDanhGia = (index) => {
+  //   setClickedItemDanhGia((prevState) => (prevState === index ? -1 : index));
+  // };
   //click thông tin
   const handleClickThongTin = (index) => {
     setClickedItemThongTin((prevState) => (prevState === index ? -1 : index));
@@ -282,6 +312,7 @@ function App() {
   const handleClickBinhLuan = (index, maPhong) => {
     setClickedItemBinhLuan((prevState) => (prevState === index ? -1 : index));
     BinhLuan.getBinhLuanTheoMaPhong(maPhong);
+    BinhLuan.getBinhLuan();
   };
   //tìm kiếm
   const handleTimKiem = (event) => {
@@ -466,8 +497,8 @@ function App() {
     const maNguoiDung = user.user.id;
     DatPhong.getDatPhongTheoMaNguoiDung(maNguoiDung);
     setThongTinDatPhong(!thongTinDatPhong);
-    document.body.style.height = "100vh";
-    document.body.style.overflow = "hidden";
+    // document.body.style.height = "100vh";
+    // document.body.style.overflow = "scroll";
   };
   //tìm tên căn hộ từ mã
   const updatedDatPhongTheoMaNguoiDung = datPhongTheoMaNguoiDung?.map(
@@ -488,88 +519,93 @@ function App() {
   const handleXoaDatPhong = (id) => {
     DatPhong.xoaDatPhong(id);
   };
+
+  //xứ lý bình luận
+  const [noiDung, setNoiDung] = useState("");
+  const [saoBinhLuan, setSaoBinhLuan] = useState(0);
+  const handleOnChangeNoiDungBinhLuan = (event) => {
+    setNoiDung(event.target.value);
+  };
+  const handleOnChangeSaoBinhLuan = (event) => {
+    setSaoBinhLuan(Number(event.target.value));
+  };
+  //post bình luận
+  const handlePostBinhLuan = (maPhong) => {
+    const dataBinhLuan = {
+      id: 0,
+      maNguoiBinhLuan: user.user.id,
+      maPhong,
+      noiDung,
+      saoBinhLuan,
+      ngayBinhLuan,
+    };
+    BinhLuan.postBinhLuan(dataBinhLuan);
+    BinhLuan.getBinhLuanTheoMaPhong(maPhong);
+    BinhLuan.getBinhLuan();
+  };
+
+  //windows resize
+  const windowResize = () => {
+    if (window.innerWidth >= 992) {
+      setMyMenu(true);
+    } else {
+      setMyMenu(false);
+    }
+  };
+  //menu
+  useEffect(() => {
+    window.addEventListener("resize", windowResize);
+    return () => {
+      window.removeEventListener("resize", windowResize);
+    };
+  }, []);
+
+  // giao diện
   return (
     <div className="App">
+      {/* thông báo  dạng popup*/}
       {contextHolder}
-      <div id="myHeader">
-        <nav className=" w-full z-50">
-          <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-6">
-            <span className="flex items-center text-white">
-              <img
-                src="https://flowbite.com/docs/images/logo.svg"
-                className="h-8 mr-3"
-                alt="Flowbite Logo"
-              />
-              <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-                AirBnb
-              </span>
-            </span>
-            <button
-              data-collapse-toggle="navbar-default"
-              type="button"
-              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-              aria-controls="navbar-default"
-              aria-expanded="false"
-            >
-              <span className="sr-only">Open main menu</span>
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 17 14"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M1 1h15M1 7h15M1 13h15"
-                />
-              </svg>
-            </button>
-            <div
-              className="hidden w-full md:block md:w-auto"
-              id="navbar-default"
-            >
-              <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-                <li>
-                  {user === null ? (
-                    <></>
-                  ) : (
-                    <span
-                      className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                      onClick={handleThongTinDatPhong}
-                    >
-                      Thông tin đặt phòng
-                    </span>
-                  )}
-                </li>
 
-                <li>
-                  {user === null ? (
-                    <span
-                      className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                      onClick={handleMoDangNhap}
-                    >
-                      Đăng nhập
-                    </span>
-                  ) : (
-                    <span
-                      className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                      onClick={handleDangXuat}
-                    >
-                      Đăng xuất
-                    </span>
-                  )}
-                </li>
-              </ul>
-            </div>
+      {/* thanh menu */}
+      <div id="myHeader">
+        <div className="headerContent">
+          <div className="myLogo">
+            <h1 onClick={handleQuayVeTrangChu}>CyberSoft</h1>
           </div>
-        </nav>{" "}
+          <div className="myMenu" hidden={!myMenu}>
+            <ul>
+              <li>
+                {user === null ? (
+                  <></>
+                ) : (
+                  <span onClick={handleThongTinDatPhong}>
+                    <i className="fa-solid fa-circle-info"></i> Đặt phòng
+                  </span>
+                )}
+              </li>
+              <li>
+                {user === null ? (
+                  <span onClick={handleMoDangNhap}>Đăng nhập</span>
+                ) : (
+                  <span onClick={handleDangXuat}>Đăng xuất</span>
+                )}
+              </li>
+            </ul>
+          </div>
+          <div
+            className="myBar"
+            onClick={() => {
+              setMyMenu(!myMenu);
+            }}
+          >
+            <i className="fa-solid fa-bars"></i>
+          </div>
+        </div>
       </div>
 
+      {/* tìm kiếm */}
       <div id="mySearch">
+        <i className="fa-solid fa-magnifying-glass"></i>
         <input
           list="myList"
           name="mySearch"
@@ -604,15 +640,13 @@ function App() {
         </div>
       </div>
 
+      {/* content */}
       <div id="myContent">
         {phongThue?.map((item, index) => {
-          // Sử dụng filter để đếm số lượng bình luận
-          // console.log(tatCaBinhLuan);
-          // console.log(item.id)
-          const countBinhLuan = tatCaBinhLuan.filter(
+          const locBinhLuan = tatCaBinhLuan.filter(
             (binhLuan) => binhLuan.maPhong === item.id
-          ).length;
-          // console.log(countBinhLuan);
+          );
+          const countBinhLuan = locBinhLuan.length;
 
           return (
             <div key={index} className="item">
@@ -746,7 +780,7 @@ function App() {
                         >
                           <span>
                             <i className="fas fa-eye-slash"></i> Bình luận (
-                            {countBinhLuan})
+                            {countBinhLuan.toLocaleString()})
                           </span>
                         </button>
                       ) : (
@@ -757,7 +791,7 @@ function App() {
                         >
                           <span>
                             <i className="fas fa-eye"></i> Bình luận (
-                            {countBinhLuan})
+                            {countBinhLuan.toLocaleString()})
                           </span>
                         </button>
                       )}
@@ -798,6 +832,12 @@ function App() {
                                     <span
                                       className={`star-rating star-${binhLuan.saoBinhLuan}`}
                                     ></span>
+                                    {binhLuan.maNguoiBinhLuan ===
+                                    user.user.id ? (
+                                      <span> Xoá, sửa</span>
+                                    ) : (
+                                      <></>
+                                    )}
                                   </div>
                                 </div>
                               ))}{" "}
@@ -806,7 +846,9 @@ function App() {
                       </div>
                     </div>
                   ) : (
-                    <></>
+                    <button className="myBtn" disabled>
+                      <span>Chưa có bình luận</span>
+                    </button>
                   )}
                 </div>
 
@@ -861,7 +903,6 @@ function App() {
                               <input
                                 type="text"
                                 name="maNguoiDung"
-                                // defaultValue={user?.user.id}
                                 value={user?.user.id}
                                 readOnly
                               />
@@ -979,6 +1020,7 @@ function App() {
           );
         })}
       </div>
+
       {/* from đăng nhập */}
       {formDangNhap ? (
         <></>
@@ -1035,6 +1077,7 @@ function App() {
           </form>
         </div>
       )}
+
       {/* form đăng ký */}
       {formDangKy ? (
         <></>
@@ -1174,35 +1217,80 @@ function App() {
           </form>
         </div>
       )}
+
       {/* Thông tin đặt phòng */}
       {thongTinDatPhong ? (
         <></>
       ) : (
         <div id="thongTinDatPhong">
-          <h1 onClick={handleQuayVeTrangChu}>Quay về trang chủ</h1>
+          <button className="myBtn" onClick={handleQuayVeTrangChu}>
+            <i className="fa-solid fa-angles-left"></i> Trang chủ
+          </button>
           <div className="datPhongContent">
             {updatedDatPhongTheoMaNguoiDung?.map((item, index) => {
               return (
-                <div key={index} className="datPhongItem">
-                  <h1>{item.tenPhong.toUpperCase()}</h1>
-                  <p>Ngày đến: {moment(item.ngayDen).format("DD/MM/YYYY")}</p>
-                  <p>Ngày đi: {moment(item.ngayDi).format("DD/MM/YYYY")}</p>
-                  <h1>Số lượng khách: {item.soLuongKhach}</h1>
-                  <div>
-                    <span>
-                      <i className="fa-regular fa-comment"></i>
-                    </span>{" "}
-                    <span>
-                      <i className="fa-regular fa-pen-to-square"></i>
-                    </span>{" "}
-                    <span>
-                      <i
-                        className="fa-regular fa-trash-can"
-                        onClick={() => {
-                          handleXoaDatPhong(item.id);
-                        }}
-                      ></i>
-                    </span>
+                <div key={index}>
+                  <div className="datPhongItem">
+                    <h1>{item.tenPhong.toUpperCase()}</h1>
+                    <p>
+                      <i className="fa-solid fa-arrow-right"></i>{" "}
+                      {moment(item.ngayDen).format("DD/MM/YYYY")}
+                    </p>
+                    <p>
+                      <i className="fa-solid fa-arrow-left"></i>{" "}
+                      {moment(item.ngayDi).format("DD/MM/YYYY")}
+                    </p>
+                    <h1 className="soLuong">
+                      <i className="fa-solid fa-person-circle-exclamation"></i>{" "}
+                      {item.soLuongKhach.toLocaleString()}
+                    </h1>
+                    <div>
+                      <form className="danhGia">
+                        <div>
+                          <textarea
+                            type="text"
+                            name="noiDung"
+                            placeholder="Nhận xét"
+                            onChange={handleOnChangeNoiDungBinhLuan}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            name="saoBinhLuan"
+                            placeholder="Số sao"
+                            onChange={handleOnChangeSaoBinhLuan}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handlePostBinhLuan(item.maPhong)}
+                          className="myBtn"
+                        >
+                          Đánh giá
+                        </button>
+                      </form>
+                    </div>
+
+                    <div className="commentXoaSua">
+                      <span
+                        className="danhGiaDatPhong"
+                        // onClick={handleClickDanhGia(index)}
+                      >
+                        <i className="fa-regular fa-comment"></i>
+                      </span>{" "}
+                      <span className="suaDatPhong">
+                        <i className="fa-regular fa-pen-to-square"></i>
+                      </span>{" "}
+                      <span className="xoaDatPhong">
+                        <i
+                          className="fa-regular fa-trash-can"
+                          onClick={() => {
+                            handleXoaDatPhong(item.id);
+                          }}
+                        ></i>
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
@@ -1211,6 +1299,7 @@ function App() {
         </div>
       )}
 
+      {/* footer */}
       <Footer />
     </div>
   );

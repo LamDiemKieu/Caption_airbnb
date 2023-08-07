@@ -301,12 +301,23 @@
     .inputItem {
       margin-bottom: 10px;
       border-bottom: 1px solid blueviolet;
+      position: relative;
       input {
         width: 100%;
         outline: none;
         border: none;
         background-color: transparent;
       }
+      span.matKhau {
+        position: absolute;
+        top: 5px;
+        right: 0;
+
+        i {
+          color: silver;
+        }
+      }
+
       button {
         width: 100%;
         height: 32px;
@@ -342,6 +353,12 @@
       color: orangered;
       cursor: pointer;
     }
+    p {
+      font-size: 12px;
+      color: orangered;
+      margin-bottom: 6px;
+      text-align: right;
+    }
   }
 }
 
@@ -366,12 +383,29 @@
     .inputItem {
       margin-bottom: 3px;
       border-bottom: 1px solid blueviolet;
+      position: relative;
+
+      select {
+        border: none;
+        width: 100%;
+        background-color: transparent;
+      }
       input {
         width: 100%;
         outline: none;
         border: none;
         background-color: transparent;
       }
+      span.matKhau {
+        position: absolute;
+        top: 5px;
+        right: 0;
+
+        i {
+          color: silver;
+        }
+      }
+
       button {
         width: 100%;
         height: 32px;
@@ -448,7 +482,7 @@
     gap: 30px;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
 
     .datPhongItem {
       width: 380px;
@@ -513,6 +547,81 @@
         i {
           color: blue;
           font-size: 18px;
+        }
+      }
+    }
+  }
+}
+
+#admin {
+  text-align: center;
+  #menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: rgb(60, 55, 55);
+    width: 220px;
+    color: white;
+    p.adminInfo {
+      text-align: center;
+      color: orangered;
+      padding: 20px 0;
+      border-bottom: 1px solid silver;
+      i {
+        margin-left: 30px;
+        color: white;
+      }
+    }
+    div {
+      margin-top: 20px;
+      ul {
+        li {
+          padding: 10px 10px 10px 20px;
+          text-align: left;
+          &.active {
+            background-color: orangered;
+          }
+        }
+      }
+    }
+  }
+  #danhSachNguoiDung,
+  #danhSachBinhLuan,
+  #danhSachCanHo {
+    margin-left: 220px;
+    cursor: pointer;
+  }
+  .myTable {
+    table {
+      margin: 0 auto;
+      thead {
+        tr {
+          th {
+            background-color: blueviolet;
+            color: white;
+            padding: 5px 10px;
+          }
+        }
+      }
+      tbody {
+        tr {
+          border-bottom: 1px solid silver;
+
+          &:nth-child(even) {
+            background-color: rgb(248, 248, 248);
+          }
+          td {
+            padding: 5px 10px;
+            text-align: left;
+            i {
+              color: red;
+              font-size: 18px;
+            }
+            &:last-child {
+              text-align: center;
+            }
+          }
         }
       }
     }

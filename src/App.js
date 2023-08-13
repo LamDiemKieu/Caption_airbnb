@@ -10,10 +10,7 @@ function App() {
   return (
     <div className="App">
       <Header />
-      {/* <Tabs /> */}
       <Menu />
-      {/* <Carousel /> */}
-
       <Footer />
     </div>
   );

@@ -137,7 +137,6 @@ function App() {
       })
         .then((res) => {
           setDuLieuNguoiDung(res.data.content);
-          // console.log(duLieuNguoiDung);
         })
         .catch((err) => {
           console.log(err);
@@ -153,12 +152,10 @@ function App() {
         },
       })
         .then((res) => {
-          // console.log(res);
           messageApi.success("Đã xoá người dùng");
         })
         .catch((err) => {
           messageApi.error("Lỗi không thể xoá người dùng");
-
           console.log(err);
         });
     },
@@ -191,7 +188,6 @@ function App() {
       })
         .then((res) => {
           setBinhLuan(res.data.content);
-          // console.log(res.data.content);
         })
         .catch((err) => {
           console.log(err);
@@ -210,8 +206,6 @@ function App() {
         .then((res) => {
           messageApi.success("Đã lưu bình luận");
           setClickedItemDanhGia(-1);
-
-          // console.log(res);
         })
         .catch((err) => {
           console.log(err);
@@ -227,7 +221,6 @@ function App() {
         },
       })
         .then((res) => {
-          // console.log(res);
           messageApi.success("Đã xoá bình luận");
         })
         .catch((err) => {
@@ -319,7 +312,6 @@ function App() {
         },
       })
         .then((res) => {
-          // console.log(res);
           DatPhong.getDatPhongTheoMaNguoiDung(user.user.id);
         })
         .catch((err) => {
@@ -389,7 +381,6 @@ function App() {
   const handleClickDanhGia = (index) => {
     setClickedItemDanhGia((prevState) => (prevState === index ? -1 : index));
     setSaoBinhLuan(0);
-    // console.log(clickedItemDanhGia);
   };
   //click thông tin
   const handleClickThongTin = (index) => {
@@ -408,7 +399,6 @@ function App() {
   //tìm kiếm
   const handleTimKiem = (event) => {
     setKeyWord(event.target.value);
-
     const timKiem = event.target.value.toLowerCase();
     if (timKiem === "") {
       setCount(-1);
@@ -543,7 +533,6 @@ function App() {
     }),
 
     onSubmit: (values) => {
-      // console.log(values);
       Auth.signin(values);
       formikDangNhap.resetForm();
     },
@@ -588,7 +577,6 @@ function App() {
 
       const datPhong = { ...values, maPhong, maNguoiDung };
       DatPhong.postDatPhong(datPhong);
-      // console.log(datPhong);
     },
   });
 
@@ -613,8 +601,6 @@ function App() {
       return item; // Return original item if matching room is not found
     }
   );
-  // console.log(updatedDatPhongTheoMaNguoiDung);
-
   //xoá đặt phòng
   const handleXoaDatPhong = (id) => {
     DatPhong.xoaDatPhong(id);
@@ -668,7 +654,6 @@ function App() {
   }, [danhSachNguoiDung]);
   //xoá người dùng
   const handleXoaNguoiDung = async (id) => {
-    // console.log(id);
     await nguoiDung.xoaNguoiDung(id);
     await nguoiDung.getNguoiDung();
   };
@@ -1667,8 +1652,6 @@ function App() {
             </div>
           </div>
         )}
-
-        {/* footer */}
         <Footer />
       </div>
     );

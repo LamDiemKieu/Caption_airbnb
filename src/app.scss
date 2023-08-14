@@ -32,6 +32,13 @@
           color: white;
           font-size: 16px;
           font-weight: 600;
+          span {
+            cursor: pointer;
+            transition: all 0.5s;
+            &:hover {
+              color: orangered;
+            }
+          }
         }
       }
     }
@@ -470,6 +477,10 @@
   z-index: 103;
   button.myBtn {
     margin: 20px 0;
+    transition: all 0.5s;
+    &:hover {
+      color: orangered;
+    }
     i {
       font-size: 12px;
       color: orangered;
@@ -637,7 +648,6 @@
       width: 100%;
       background-color: orangered;
       .myMenu {
-        // display: none;
         position: absolute;
         top: 80px;
         left: 0;
@@ -645,12 +655,10 @@
         bottom: 0;
         z-index: 110;
         width: 100%;
-
         ul {
           flex-direction: column;
           background-color: whitesmoke;
           padding: 20px;
-
           li {
             color: blue;
           }

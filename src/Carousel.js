@@ -30,8 +30,6 @@ const Carousel = () => {
           <div key={index} className="mt-5 w-72">
             <ItemCarousel item={item} />
             <h1>{item.tenPhong}</h1>
-            <p>Lorem ipsum dolor sit amet.</p>
-            <p>Giá</p>
           </div>
         );
       })}
